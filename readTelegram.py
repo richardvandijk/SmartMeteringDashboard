@@ -3,6 +3,7 @@
 
 import re
 import serial
+from serial import Serial
 from datetime import datetime
 
 p1 = serial.Serial()
@@ -26,7 +27,7 @@ while True:
         print(telegramLine.decode('ascii').strip())
         if re.match(b'(?=1-0:1.7.0)',telegramLine):
             
-            kw = telegramLine[10:-4]
+            kw = telegramLine[10:-6]
             watt = float(kw) * 1000
             watt = int(watt)
             print (watt)
