@@ -41,7 +41,8 @@ while True:
         if re.match(b'(?=!)', telegramLine):
             timeStamp = datetime.now() # timestamp complete telegram received
             print(timeStamp)
-            print(watt_pos' + ' watt_neg)
+            print(watt_pos)
+            print(watt_neg)
             checksumFound = True
     
     p1.close()
