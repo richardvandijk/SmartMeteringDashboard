@@ -28,14 +28,20 @@ while True:
         if re.match(b'(?=1-0:1.7.0)',telegramLine):
             
             kw = telegramLine[10:-6]
-            watt = float(kw) * 1000
-            watt = int(watt)
-            print (watt)
+            watt_pos = float(kw) * 1000
+            watt_pos = int(watt_pos)
+            
+        if re.match(b'(?=1-0:2.7.0)',telegramLine):
+         
+            kw = telegramLine[10:-6]
+            watt_neg = float(kw) * 1000
+            watt_neg = int(watt_neg)            
  
         # Check for end of telegram (exlamation mark)
         if re.match(b'(?=!)', telegramLine):
             timeStamp = datetime.now() # timestamp complete telegram received
             print(timeStamp)
+            print(watt_pos' + ' watt_neg)
             checksumFound = True
     
     p1.close()
