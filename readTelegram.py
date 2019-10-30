@@ -29,7 +29,7 @@ while True:
             kw = telegramLine[10:-4]
             watt = float(kw) * 1000
             watt = int(watt)
-            print watt
+            print (watt)
  
         # Check for end of telegram (exlamation mark)
         if re.match(b'(?=!)', telegramLine):
