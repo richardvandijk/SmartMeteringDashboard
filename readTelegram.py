@@ -19,7 +19,7 @@ p1.timeout = 12
 p1.port = "/dev/ttyUSB0"
 p1.close()
 
-# End of telegram, CR/LF followed by exclamation mark 
+# End of telegram, CR/LF followed by exclamation mark
 telegramPattern = re.compile(b'\r\n(?=!)')
 # check telegram with crc16; crc16-ibm (x16 + x15 + x2 + 1)reversed (0xA001)
 crc16 = crcmod.predefined.mkPredefinedCrcFun('crc16')
@@ -37,27 +37,27 @@ while True:
             checksumFound = False
         except Exception as ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__), ex.args)
+            message = template.format(type(ex).__name__), ex.args
             print(message)
             sys.exit("Error on opening %s. Aborted." % p1.name)
-            
+
         while not checksumFound
             # construct telegram from lines
             telegramLine = p1.readline()
             telegram = telegram + telegramLine
-        
+
     except Exception as ex:
         template = "An exception of type {0} occured. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__), ex.args)
+        message = template.format(type(ex).__name__), ex.args
         print(message)
         print("Problem %s, continuing ...") % ex
-            
+
     # Close serial port
     try:
         p1.close()
     except:
         sys.exit("Serial port made a booboo. %s. Aborted." % p1.name)
-        
+
     # Complete telegrom received. Check telegram and store in redis
     for m in telegramPattern.finditer(telegram):
         # extract checksum and integerize... :)
@@ -66,7 +66,7 @@ while True:
         checksumCalculated = crc16(telegram[:m.end() +1])
         if checksumExtracted == checksumCalculated:
             checksumCorrect = True
-    
+
     if checksumCorrect:
         print("Telegram valid!")
 
@@ -74,17 +74,17 @@ while True:
     #     telegramLine = p1.readline()
     #     print(telegramLine.decode('ascii').strip())
     #     if re.match(b'(?=1-0:1.7.0)',telegramLine):
-    #         
+    #
     #         kw = telegramLine[10:-6]
     #         watt_pos = float(kw) * 1000
     #         watt_pos = int(watt_pos)
-    #         
+    #
     #     if re.match(b'(?=1-0:2.7.0)',telegramLine):
-    #      
+    #
     #         kw = telegramLine[10:-6]
     #         watt_neg = float(kw) * 1000
-    #         watt_neg = int(watt_neg)            
-    # 
+    #         watt_neg = int(watt_neg)
+    #
     #     # Check for end of telegram (exlamation mark)
     #     if re.match(b'(?=!)', telegramLine):
     #         timeStamp = datetime.now() # timestamp complete telegram received
@@ -92,5 +92,5 @@ while True:
     #         print(watt_pos)
     #         print(watt_neg)
     #         checksumFound = True
-    # 
+    #
     # p1.close()
