@@ -41,7 +41,7 @@ while True:
             print(message)
             sys.exit("Error on opening %s. Aborted." % p1.name)
 
-        while not checksumFound
+        while not checksumFound:
             # construct telegram from lines
             telegramLine = p1.readline()
             telegram = telegram + telegramLine
