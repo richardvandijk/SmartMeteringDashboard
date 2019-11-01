@@ -2,7 +2,7 @@
 # Python script to read DSMR v.5.0 P1 telegrams and store telegrams in redis
 
 import re
-# import serial
+import serial
 import crcmod.predefined
 from serial import Serial
 from datetime import datetime
@@ -44,7 +44,11 @@ while True:
         while not checksumFound:
             # construct telegram from lines
             telegramLine = p1.readline()
-            telegram = telegram + telegramLine
+            if re.match(b'(?=!)', telegramLine):
+                telegram = telegram + telegramLine
+                checksumFound = True
+            else:
+                telegram = telegram + telegramLine
 
     except Exception as ex:
         template = "An exception of type {0} occured. Arguments:\n{1!r}"
@@ -58,12 +62,12 @@ while True:
     except:
         sys.exit("Serial port made a booboo. %s. Aborted." % p1.name)
 
-    # Complete telegrom received. Check telegram and store in redis
+    # Complete telegram received. Check telegram and store in redis
     for m in telegramPattern.finditer(telegram):
         # extract checksum and integerize... :)
-        checksumExtracted = int('0x' _ telegram[m.end() +1:].decode('ascii'), 16)
+        checksumExtracted = int('0x' + telegram[m.end() + 1:].decode('ascii'), 16)
         # calculate checksum over telegram including exclamation maek
-        checksumCalculated = crc16(telegram[:m.end() +1])
+        checksumCalculated = crc16(telegram[:m.end() + 1])
         if checksumExtracted == checksumCalculated:
             checksumCorrect = True
 
