@@ -10,7 +10,7 @@ import datetime
 
 # Debugging settings
 production = True   # Use serial or file as input
-debugging = 2   # Show extra output
+debugging = 1   # Show extra output
 # DSMR interesting codes
 gas_meter = '1'
 list_of_interesting_codes = {
