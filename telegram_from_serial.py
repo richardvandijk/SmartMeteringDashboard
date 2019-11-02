@@ -14,7 +14,7 @@ debugging = 1   # Show extra output
 # DSMR interesting codes
 gas_meter = '1'
 list_of_interesting_codes = {
-    '0-0:1.0.0': 'timestampTelegram',
+#    '0-0:1.0.0': 'timestampTelegram',
     '1-0:1.8.1': 'positiveActiveEnergyTariffT1',
     '1-0:1.8.2': 'positiveActiveEnergyTariffT2',
     '1-0:2.8.1': 'negativeActiveEnergyTariffT1',
