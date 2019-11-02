@@ -10,11 +10,11 @@ import datetime
 
 # Debugging settings
 production = True   # Use serial or file as input
-debugging = 1   # Show extra output
+debugging = 2   # Show extra output
 # DSMR interesting codes
 gas_meter = '1'
 list_of_interesting_codes = {
-#    '0-0:1.0.0': 'timestampTelegram',
+    '0-0:1.0.0': 'timestampTelegram',
     '1-0:1.8.1': 'positiveActiveEnergyTariffT1',
     '1-0:1.8.2': 'positiveActiveEnergyTariffT2',
     '1-0:2.8.1': 'negativeActiveEnergyTariffT1',
@@ -67,7 +67,9 @@ if production:
     ser = serial.Serial()
     ser.baudrate = 115200
     ser.bytesize = serial.EIGHTBITS
-    ser.parity = serial.PARITY_NONE
+    ser.parity = serial.PARITY_NONE, in <module>
+    value = float(value.lstrip(b'\(').rstrip(b'\)*kWhA'))
+
     ser.stopbits = serial.STOPBITS_ONE
     ser.xonxoff = 1
     ser.rtscts = 0
@@ -163,7 +165,7 @@ while True:
                         (time,value) = re.findall('\((.*?)\)',value)
                         value = float(value.lstrip(b'\(').rstrip(b'\)*m3'))
                 else:
-                        value = float(value.lstrip(b'\(').rstrip(b'\)*kWhA'))
+                        value = float(value.lstrip(b'\(').rstrip(b'\)*kWhAV'))
                 # Print nicely formatted string
                 if print_format == 'string' :
                     print_string = '{0:<'+str(max_len)+'}{1:>12}'
