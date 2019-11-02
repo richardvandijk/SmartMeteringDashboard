@@ -67,7 +67,7 @@ if production:
     ser = serial.Serial()
     ser.baudrate = 115200
     ser.bytesize = serial.EIGHTBITS
-    ser.parity = serial.PARITY_NONE, in <module>
+    ser.parity = serial.PARITY_NONE in <module>
     value = float(value.lstrip(b'\(').rstrip(b'\)*kWhA'))
 
     ser.stopbits = serial.STOPBITS_ONE
