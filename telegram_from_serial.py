@@ -2,6 +2,12 @@
 # Python script to retrieve and parse a DSMR telegram from a P1 port
 # source: https://github.com/jvhaarst/DSMR-P1-telegram-reader/blob/master/telegram_from_serial.py
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
+#from builtins import map
+#from builtins import str
+
 import re
 import sys
 import serial
@@ -9,12 +15,12 @@ import crcmod.predefined
 import datetime
 
 # Debugging settings
-production = True   # Use serial or file as input
+production = False   # Use serial or file as input
 debugging = 1   # Show extra output
 # DSMR interesting codes
 gas_meter = '1'
 list_of_interesting_codes = {
-    '0-0:1.0.0': 'timestampTelegram',
+#    '0-0:1.0.0': 'timestampTelegram',
     '1-0:1.8.1': 'positiveActiveEnergyTariffT1',
     '1-0:1.8.2': 'positiveActiveEnergyTariffT2',
     '1-0:2.8.1': 'negativeActiveEnergyTariffT1',
@@ -47,7 +53,7 @@ list_of_interesting_codes = {
     '0-'+gas_meter+':24.2.1': 'lastValueTemperatureCorrectedGas'
 }
 
-max_len = max(map(len,list_of_interesting_codes.values()))
+max_len = max(list(map(len,list(list_of_interesting_codes.values()))))
 
 # Program variables
 # Set the way the values are printed:
@@ -76,7 +82,7 @@ if production:
 else:
     print("Running in test mode")
     # Testing
-    ser = open("raw.out", 'rb')
+    ser = open("Design/telegram.list", 'rb')
 
 while True:
     try:
@@ -90,8 +96,8 @@ while True:
             except Exception as ex:
                 template = "An exception of type {0} occured. Arguments:\n{1!r}"
                 message = template.format(type(ex).__name__, ex.args)
-                print message
-                sys.exit("Fout bij het openen van %s. Programma afgebroken." % ser.name)
+                print(message)
+                sys.exit("Error on opening %s. Program aborted." % ser.name)
         else:
             telegram = ''
             checksum_found = False
@@ -112,14 +118,14 @@ while True:
     except Exception as ex:
         template = "An exception of type {0} occured. Arguments:\n{1!r}"
         message = template.format(type(ex).__name__, ex.args)
-        print message
-        print("There was a problem %s, continuing...") % ex
+        print(message)
+        print(("There was a problem %s, continuing...") % ex)
     #Close serial port
     if production:
         try:
             ser.close()
         except:
-            sys.exit("Oops %s. Programma afgebroken." % ser.name)
+            sys.exit("Oops %s. Program aborted." % ser.name)
     # We have a complete telegram, now we can process it.
     # Look for the checksum in the telegram
     for m in pattern.finditer(telegram):
@@ -148,7 +154,7 @@ while True:
                 if debugging == 2:
                     print(telegram_line)
                 if debugging == 3:
-                    print re.split(b'(\()', telegram_line)
+                    print(re.split(b'(\()', telegram_line))
                 # You can't put a list in a dict TODO better solution
                 code = ''.join(re.split(b'(\()', telegram_line)[:1])
                 value = ''.join(re.split(b'(\()', telegram_line)[1:])
@@ -168,10 +174,10 @@ while True:
                 if print_format == 'string' :
                     print_string = '{0:<'+str(max_len)+'}{1:>12}'
                     if debugging > 0:
-                            print(datetime.datetime.utcnow()),
+                            print((datetime.datetime.utcnow()), end=' '),
                     print(print_string.format(list_of_interesting_codes[code], value))
                 else:
                     print_string = '{0:<10}{1:>12}'
                     if debugging > 0:
-                            print(datetime.datetime.utcnow()),
+                            print((datetime.datetime.utcnow()), end=' '),
                     print(print_string.format(code, value))
