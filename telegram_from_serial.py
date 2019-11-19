@@ -13,13 +13,14 @@ import sys
 import serial
 import crcmod.predefined
 import datetime
+import redis
 
 # Debugging settings
 production = False   # Use serial or file as input
 debugging = 1   # Show extra output
 # DSMR interesting codes
-gas_meter = '1'
-list_of_interesting_codes = {
+gasMeter = '1'
+interestingCodes = {
 #    '0-0:1.0.0': 'timestampTelegram',
     '1-0:1.8.1': 'positiveActiveEnergyTariffT1',
     '1-0:1.8.2': 'positiveActiveEnergyTariffT2',
@@ -50,39 +51,40 @@ list_of_interesting_codes = {
     '1-0:72.7.0': 'instantaneousVoltagePhaseL3',
     '1-0:61.7.0': 'instantaneousPositiveActivePowerPhaseL3',
     '1-0:62.7.0': 'instantaneousNegativeActivePowerPhaseL3',
-    '0-'+gas_meter+':24.2.1': 'lastValueTemperatureCorrectedGas'
+    '0-'+gasMeter+':24.2.1': 'lastValueTemperatureCorrectedGas'
 }
 
-max_len = max(list(map(len,list(list_of_interesting_codes.values()))))
+maxLen = max(list(map(len,list(interestingCodes.values()))))
+connRedis = redis.Redis(host='localhost', port=6379, db=0)
 
 # Program variables
 # Set the way the values are printed:
-print_format = 'string'
+printFormat = 'string'
 # The true telegram ends with an exclamation mark after a CR/LF
 pattern = re.compile(b'\r\n(?=!)')
 # According to the DSMR spec, we need to check a CRC16
 crc16 = crcmod.predefined.mkPredefinedCrcFun('crc16')
 # Create an empty telegram
 telegram = ''
-checksum_found = False
-good_checksum = False
-
+checksumFound = False
+goodChecksum = False
+ 
 
 if production:
     #Serial port configuration
-    ser = serial.Serial()
-    ser.baudrate = 115200
-    ser.bytesize = serial.EIGHTBITS
-    ser.parity = serial.PARITY_NONE
-    ser.stopbits = serial.STOPBITS_ONE
-    ser.xonxoff = 1
-    ser.rtscts = 0
-    ser.timeout = 12
-    ser.port = "/dev/ttyUSB0"
+    p1 = serial.Serial()
+    p1.baudrate = 115200
+    p1.bytesize = serial.EIGHTBITS
+    p1.parity = serial.PARITY_NONE
+    p1.stopbits = serial.STOPBITS_ONE
+    p1.xonxoff = 1
+    p1.rtscts = 0
+    p1.timeout = 12
+    p1.port = "/dev/ttyUSB0"
 else:
     print("Running in test mode")
     # Testing
-    ser = open("Design/telegram.list", 'rb')
+    p1 = open("Design/telegram.list", 'rb')
 
 while True:
     try:
@@ -90,30 +92,30 @@ while True:
         if production:
             #Open serial port
             try:
-                ser.open()
+                p1.open()
                 telegram = ''
-                checksum_found = False
+                checksumFound = False
             except Exception as ex:
                 template = "An exception of type {0} occured. Arguments:\n{1!r}"
                 message = template.format(type(ex).__name__, ex.args)
                 print(message)
-                sys.exit("Error on opening %s. Program aborted." % ser.name)
+                sys.exit("Error on opening %s. Program aborted." % p1.name)
         else:
             telegram = ''
-            checksum_found = False
-        while not checksum_found:
+            checksumFound = False
+        while not checksumFound:
             # Read in a line
-            telegram_line = ser.readline()
+            telegramLine = p1.readline()
             if debugging == 2:
-                print(telegram_line.decode('ascii').strip())
+                print(telegramLine.decode('ascii').strip())
             # Check if it matches the checksum line (! at start)
-            if re.match(b'(?=!)', telegram_line):
-                telegram = telegram + telegram_line
+            if re.match(b'(?=!)', telegramLine):
+                telegram = telegram + telegramLine
                 if debugging:
                     print('Found checksum!')
-                checksum_found = True
+                checksumFound = True
             else:
-                telegram = telegram + telegram_line
+                telegram = telegram + telegramLine
 
     except Exception as ex:
         template = "An exception of type {0} occured. Arguments:\n{1!r}"
@@ -123,46 +125,46 @@ while True:
     #Close serial port
     if production:
         try:
-            ser.close()
+            p1.close()
         except:
-            sys.exit("Oops %s. Program aborted." % ser.name)
+            sys.exit("Oops %s. Program aborted." % p1.name)
     # We have a complete telegram, now we can process it.
     # Look for the checksum in the telegram
     for m in pattern.finditer(telegram):
         # Remove the exclamation mark from the checksum,
         # and make an integer out of it.
-        given_checksum = int('0x' + telegram[m.end() + 1:].decode('ascii'), 16)
+        givenChecksum = int('0x' + telegram[m.end() + 1:].decode('ascii'), 16)
         # The exclamation mark is also part of the text to be CRC16'd
-        calculated_checksum = crc16(telegram[:m.end() + 1])
-        if given_checksum == calculated_checksum:
-            good_checksum = True
-    if good_checksum:
+        calculatedChecksum = crc16(telegram[:m.end() + 1])
+        if givenChecksum == calculatedChecksum:
+            goodChecksum = True
+    if goodChecksum:
         if debugging == 1:
             print("Good checksum !")
         # Store the vaules in a dictionary
-        telegram_values = dict()
+        telegramValues = dict()
         # Split the telegram into lines and iterate over them
-        for telegram_line in telegram.split(b'\r\n'):
+        for telegramLine in telegram.split(b'\r\n'):
             # Split the OBIS code from the value
             # The lines with a OBIS code start with a number
-            if re.match(b'\d', telegram_line):
+            if re.match(b'\d', telegramLine):
                 if debugging == 3:
-                    print(telegram_line)
+                    print(telegramLine)
                 # The values are enclosed with parenthesis
                 # Find the location of the first opening parenthesis,
                 # and store all split lines
                 if debugging == 2:
-                    print(telegram_line)
+                    print(telegramLine)
                 if debugging == 3:
-                    print(re.split(b'(\()', telegram_line))
+                    print(re.split(b'(\()', telegramLine))
                 # You can't put a list in a dict TODO better solution
-                code = ''.join(re.split(b'(\()', telegram_line)[:1])
-                value = ''.join(re.split(b'(\()', telegram_line)[1:])
-                telegram_values[code] = value
+                code = ''.join(re.split(b'(\()', telegramLine)[:1])
+                value = ''.join(re.split(b'(\()', telegramLine)[1:])
+                telegramValues[code] = value
 
         # Print the lines to screen
-        for code, value in sorted(telegram_values.items()):
-            if code in list_of_interesting_codes:
+        for code, value in sorted(telegramValues.items()):
+            if code in interestingCodes:
                 # Cleanup value
                 # Gas needs another way to cleanup
                 if 'm3' in value:
@@ -171,13 +173,13 @@ while True:
                 else:
                         value = float(value.lstrip(b'\(').rstrip(b'\)*kWhAV'))
                 # Print nicely formatted string
-                if print_format == 'string' :
-                    print_string = '{0:<'+str(max_len)+'}{1:>12}'
+                if printFormat == 'string' :
+                    printString = '{0:<'+str(maxLen)+'}{1:>12}'
                     if debugging > 0:
                             print((datetime.datetime.utcnow()), end=' '),
-                    print(print_string.format(list_of_interesting_codes[code], value))
+                    print(printString.format(interestingCodes[code], value))
                 else:
-                    print_string = '{0:<10}{1:>12}'
+                    printString = '{0:<10}{1:>12}'
                     if debugging > 0:
                             print((datetime.datetime.utcnow()), end=' '),
-                    print(print_string.format(code, value))
+                    print(printString.format(code, value))
