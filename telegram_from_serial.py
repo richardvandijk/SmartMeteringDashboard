@@ -21,7 +21,7 @@ debugging = 1   # Show extra output
 # DSMR interesting codes
 gasMeter = '1'
 interestingCodes = {
-#    '0-0:1.0.0': 'timestampTelegram',
+    '0-0:1.0.0': 'timestampTelegram',
     '1-0:1.8.1': 'positiveActiveEnergyTariffT1',
     '1-0:1.8.2': 'positiveActiveEnergyTariffT2',
     '1-0:2.8.1': 'negativeActiveEnergyTariffT1',
@@ -51,11 +51,11 @@ interestingCodes = {
     '1-0:72.7.0': 'instantaneousVoltagePhaseL3',
     '1-0:61.7.0': 'instantaneousPositiveActivePowerPhaseL3',
     '1-0:62.7.0': 'instantaneousNegativeActivePowerPhaseL3',
-    '0-'+gasMeter+':24.2.1': 'lastValueTemperatureCorrectedGas'
+#    '0-'+gasMeter+':24.2.1': 'lastValueTemperatureCorrectedGas'
 }
 
 maxLen = max(list(map(len,list(interestingCodes.values()))))
-connRedis = redis.Redis(host='localhost', port=6379, db=0)
+connRedis = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
 # Program variables
 # Set the way the values are printed:
@@ -68,7 +68,7 @@ crc16 = crcmod.predefined.mkPredefinedCrcFun('crc16')
 telegram = ''
 checksumFound = False
 goodChecksum = False
- 
+
 
 if production:
     #Serial port configuration
@@ -140,7 +140,7 @@ while True:
             goodChecksum = True
     if goodChecksum:
         if debugging == 1:
-            print("Good checksum !")
+            print("Good checksum!")
         # Store the vaules in a dictionary
         telegramValues = dict()
         # Split the telegram into lines and iterate over them
@@ -166,20 +166,26 @@ while True:
         for code, value in sorted(telegramValues.items()):
             if code in interestingCodes:
                 # Cleanup value
+                # strip timestamp of S or W
+                if code == '0-0:1.0.0':
+                    # value = int(value.lstrip(b'\(').rstrip(b'\)*SW'))
+                    # convert to UTC
+                    value = str(value.lstrip(b'\(').rstrip(b'\)*'))
+
                 # Gas needs another way to cleanup
-                if 'm3' in value:
-                        (time,value) = re.findall('\((.*?)\)',value)
-                        value = float(value.lstrip(b'\(').rstrip(b'\)*m3'))
+#                if 'm3' in value:
+#                        (time,value) = re.findall('\((.*?)\)',value)
+#                        value = float(value.lstrip(b'\(').rstrip(b'\)*m3'))
                 else:
                         value = float(value.lstrip(b'\(').rstrip(b'\)*kWhAV'))
                 # Print nicely formatted string
                 if printFormat == 'string' :
                     printString = '{0:<'+str(maxLen)+'}{1:>12}'
-                    if debugging > 0:
-                            print((datetime.datetime.utcnow()), end=' '),
+#                    if debugging > 0:
+#                            print((datetime.datetime.utcnow()), end=' '),
                     print(printString.format(interestingCodes[code], value))
                 else:
                     printString = '{0:<10}{1:>12}'
-                    if debugging > 0:
-                            print((datetime.datetime.utcnow()), end=' '),
+#                    if debugging > 0:
+#                            print((datetime.datetime.utcnow()), end=' '),
                     print(printString.format(code, value))
