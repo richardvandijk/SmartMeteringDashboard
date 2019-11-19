@@ -12,7 +12,7 @@ import re
 import sys
 import serial
 import crcmod.predefined
-import datetime
+from datetime import datetime, timedelta
 import redis
 
 # Debugging settings
@@ -21,7 +21,7 @@ debugging = 1   # Show extra output
 # DSMR interesting codes
 gasMeter = '1'
 interestingCodes = {
-    '0-0:1.0.0': 'timestampTelegram',
+    '0-0:1.0.0': 'timestampTelegramUtc',
     '1-0:1.8.1': 'positiveActiveEnergyTariffT1',
     '1-0:1.8.2': 'positiveActiveEnergyTariffT2',
     '1-0:2.8.1': 'negativeActiveEnergyTariffT1',
@@ -59,7 +59,7 @@ connRedis = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
 # Program variables
 # Set the way the values are printed:
-printFormat = 'string'
+#printFormat = 'string'
 # The true telegram ends with an exclamation mark after a CR/LF
 pattern = re.compile(b'\r\n(?=!)')
 # According to the DSMR spec, we need to check a CRC16
@@ -82,7 +82,7 @@ if production:
     p1.timeout = 12
     p1.port = "/dev/ttyUSB0"
 else:
-    print("Running in test mode")
+    print("Running in test mode")#import datetime
     # Testing
     p1 = open("Design/telegram.list", 'rb')
 
@@ -170,7 +170,17 @@ while True:
                 if code == '0-0:1.0.0':
                     # value = int(value.lstrip(b'\(').rstrip(b'\)*SW'))
                     # convert to UTC
+                    # 191119225041W = %y%m%d%H%M%S + S = SUMMER / W = WINTER
+                    # S = UTC + 2; W = UTC + 1
                     value = str(value.lstrip(b'\(').rstrip(b'\)*'))
+                    if 'S' in value:
+                        value = str(value.rstrip(b'*S'))
+                        value = datetime.strptime(value, '%y%m%d%H%M%S')
+                        value = value - timedelta(hours = 2)
+                    else:
+                        value = str(value.rstrip(b'*W'))
+                        value = datetime.strptime(value, '%y%m%d%H%M%S')
+                        value = value - timedelta(hours = 1)
 
                 # Gas needs another way to cleanup
 #                if 'm3' in value:
@@ -179,13 +189,14 @@ while True:
                 else:
                         value = float(value.lstrip(b'\(').rstrip(b'\)*kWhAV'))
                 # Print nicely formatted string
-                if printFormat == 'string' :
-                    printString = '{0:<'+str(maxLen)+'}{1:>12}'
+#                if printFormat == 'string' :
+#                    printString = '{0:<'+str(maxLen)+'}{1:>12}'
 #                    if debugging > 0:
 #                            print((datetime.datetime.utcnow()), end=' '),
-                    print(printString.format(interestingCodes[code], value))
-                else:
-                    printString = '{0:<10}{1:>12}'
+#                    print(printString.format(interestingCodes[code], value))
+#                else:
+#                    printString = '{0:<10}{1:>12}'
 #                    if debugging > 0:
 #                            print((datetime.datetime.utcnow()), end=' '),
-                    print(printString.format(code, value))
+#                    print(printString.format(code, value))
+                print(interestingCodes[code], value)
