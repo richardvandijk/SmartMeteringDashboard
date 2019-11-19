@@ -202,6 +202,4 @@ while True:
 #                    print(printString.format(code, value))
                 #print(interestingCodes[code], value)
 
-                dict(interestingCodes[code], value)
-                for i in range(10):
-                    connRedis.xadd(streamName, dict, id='*')
+                connRedis.xadd(streamName, value, id='*')
