@@ -200,6 +200,6 @@ while True:
 #                    if debugging > 0:
 #                            print((datetime.datetime.utcnow()), end=' '),
 #                    print(printString.format(code, value))
-                #print(interestingCodes[code], value)
+                print(interestingCodes[code], value)
 
-                connRedis.xadd(streamName, value, id='*')
+                connRedis.xadd(streamName, telegramValues, id='*')
