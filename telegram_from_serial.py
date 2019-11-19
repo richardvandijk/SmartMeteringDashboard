@@ -163,6 +163,7 @@ while True:
                 telegramValues[code] = value
 
         # Print the lines to screen
+        streamName = 'sourceActive'
         for code, value in sorted(telegramValues.items()):
             if code in interestingCodes:
                 # Cleanup value
@@ -199,4 +200,7 @@ while True:
 #                    if debugging > 0:
 #                            print((datetime.datetime.utcnow()), end=' '),
 #                    print(printString.format(code, value))
-                print(interestingCodes[code], value)
+                #print(interestingCodes[code], value)
+
+                for i in range(10):
+                    connRedis.xadd(streamName, value, id='*')
