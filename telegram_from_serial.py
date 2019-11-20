@@ -126,7 +126,7 @@ while True:
     if production:
         try:
             p1.close()
-        except:
+        except Exception as exs:
             sys.exit("Oops %s. Program aborted." % p1.name)
     # We have a complete telegram, now we can process it.
     # Look for the checksum in the telegram
@@ -203,3 +203,4 @@ while True:
                 print(interestingCodes[code], value)
 
                 connRedis.xadd(streamName, telegramValues, id='*')
+                print('Values added to Redis')
