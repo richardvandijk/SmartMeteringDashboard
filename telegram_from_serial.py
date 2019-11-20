@@ -203,5 +203,4 @@ while True:
                 print(interestingCodes[code], value)
 
                 connRedis.xadd(streamName, telegramValues, id='*')
-                connRedis.quit
                 print('Values added to Redis')
