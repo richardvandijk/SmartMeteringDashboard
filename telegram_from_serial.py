@@ -179,12 +179,12 @@ while True:
                         value = str(value.rstrip(b'*S'))
                         value = datetime.strptime(value, '%y%m%d%H%M%S')
                         value = value - timedelta(hours = 2)
-                        telegramRedis[str(code)] = value
+                        telegramRedis[str(code)] = str(value)
                     else:
                         value = str(value.rstrip(b'*W'))
                         value = datetime.strptime(value, '%y%m%d%H%M%S')
                         value = value - timedelta(hours = 1)
-                        telegramRedis[str(code)] = value
+                        telegramRedis[str(code)] = str(value)
 
                 # Gas needs another way to cleanup
 #                if 'm3' in value:
