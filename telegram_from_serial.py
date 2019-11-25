@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 import redis
 
 # Debugging settings
-production = False   # Use serial or file as input
+production = True   # Use serial or file as input
 debugging = 1   # Show extra output
 # DSMR interesting codes
 gasMeter = '1'
@@ -164,6 +164,7 @@ while True:
 
         # Print the lines to screen
         streamName = 'sourceActive'
+        telegramRedis = {}
         for code, value in sorted(telegramValues.items()):
             if code in interestingCodes:
                 # Cleanup value
@@ -178,10 +179,12 @@ while True:
                         value = str(value.rstrip(b'*S'))
                         value = datetime.strptime(value, '%y%m%d%H%M%S')
                         value = value - timedelta(hours = 2)
+                        telegramRedis[str(code)] = value
                     else:
                         value = str(value.rstrip(b'*W'))
                         value = datetime.strptime(value, '%y%m%d%H%M%S')
                         value = value - timedelta(hours = 1)
+                        telegramRedis[str(code)] = value
 
                 # Gas needs another way to cleanup
 #                if 'm3' in value:
@@ -189,6 +192,7 @@ while True:
 #                        value = float(value.lstrip(b'\(').rstrip(b'\)*m3'))
                 else:
                         value = float(value.lstrip(b'\(').rstrip(b'\)*kWhAV'))
+                        telegramRedis[str(code)] = value
                 # Print nicely formatted string
 #                if printFormat == 'string' :
 #                    printString = '{0:<'+str(maxLen)+'}{1:>12}'
@@ -200,7 +204,8 @@ while True:
 #                    if debugging > 0:
 #                            print((datetime.datetime.utcnow()), end=' '),
 #                    print(printString.format(code, value))
-                print(interestingCodes[code], value)
+    #            print(interestingCodes[code], value)
 
-                connRedis.xadd(streamName, telegramValues, id='*')
-                print('Values added to Redis')
+    #    print(telegramRedis)
+        connRedis.xadd(streamName, telegramRedis, id='*')
+        print('Values added to Redis')
