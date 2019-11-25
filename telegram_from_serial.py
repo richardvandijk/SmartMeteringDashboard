@@ -17,7 +17,7 @@ import redis
 
 # Debugging settings
 production = True   # Use serial or file as input
-debugging = 1   # Show extra output
+debugging = 0   # Show extra output
 # DSMR interesting codes
 gasMeter = '1'
 interestingCodes = {
@@ -111,7 +111,7 @@ while True:
             # Check if it matches the checksum line (! at start)
             if re.match(b'(?=!)', telegramLine):
                 telegram = telegram + telegramLine
-                if debugging:
+                if debugging == 1:
                     print('Found checksum!')
                 checksumFound = True
             else:
@@ -208,4 +208,4 @@ while True:
 
     #    print(telegramRedis)
         connRedis.xadd(streamName, telegramRedis, id='*')
-        print('Values added to Redis')
+#        print('Values added to Redis')
