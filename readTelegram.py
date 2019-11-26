@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 # Python script to retrieve and parse a DSMR telegram from a P1 port
-# source: https://github.com/jvhaarst/DSMR-P1-telegram-reader/blob/master/telegram_from_serial.py
+# Stores output in redis streams
 
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -14,19 +14,24 @@ import serial
 import crcmod.predefined
 from datetime import datetime, timedelta
 import redis
-import yaml
+import configparser
 
-with open("config.yaml", 'r') as configFile:
-    config = yaml.load(configFile)
-
-for section in config:
-    print(section)
+config = configparser.ConfigParser()
+config.read('settings.conf')
 
 # Debugging settings
-production = False   # Use serial or file as input
-debugging = 0   # Show extra output
+production = config.getboolean('environment','production')
+debugging = config['environment']['debugging']   # Show extra output
+
+# redis server settings
+redisHost = config['redisServer']['host']
+redisPort = config['redisServer']['port']
+redisDb = config['redisServer']['db']
+redisConn = redis.Redis(host=redisHost, port=redisPort, db=redisDb)
+redisStream = config['redisServer']['streamName']
+
 # DSMR interesting codes
-gasMeter = '1'
+gasMeter = config['p1Device']['gasMeter']
 interestingCodes = {
     '0-0:1.0.0': 'timestampTelegramUtc',
     '1-0:1.8.1': 'positiveActiveEnergyTariffT1',
@@ -61,12 +66,10 @@ interestingCodes = {
 #    '0-'+gasMeter+':24.2.1': 'lastValueTemperatureCorrectedGas'
 }
 
+# descibe what maxLen does
 maxLen = max(list(map(len,list(interestingCodes.values()))))
-connRedis = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
 # Program variables
-# Set the way the values are printed:
-#printFormat = 'string'
 # The true telegram ends with an exclamation mark after a CR/LF
 pattern = re.compile(b'\r\n(?=!)')
 # According to the DSMR spec, we need to check a CRC16
@@ -76,18 +79,17 @@ telegram = ''
 checksumFound = False
 goodChecksum = False
 
-
 if production:
     #Serial port configuration
     p1 = serial.Serial()
-    p1.baudrate = 115200
-    p1.bytesize = serial.EIGHTBITS
-    p1.parity = serial.PARITY_NONE
-    p1.stopbits = serial.STOPBITS_ONE
-    p1.xonxoff = 1
-    p1.rtscts = 0
-    p1.timeout = 12
-    p1.port = "/dev/ttyUSB0"
+    p1.baudrate = config['p1Device']['baudrate']
+    p1.bytesize = config['p1Device']['bytesize']
+    p1.parity = config['p1Device']['parity']
+    p1.stopbits = config['p1Device']['stopbits']
+    p1.xonxoff = config['p1Device']['xonxoff']
+    p1.rtscts = config['p1Device']['rtscts']
+    p1.timeout = config['p1Device']['timeout']
+    p1.port = config['p1Device']['port']
 else:
     print("Running in test mode")#import datetime
     # Testing
@@ -170,7 +172,6 @@ while True:
                 telegramValues[code] = value
 
         # Print the lines to screen
-        streamName = 'sourceActive'
         telegramRedis = {}
         for code, value in sorted(telegramValues.items()):
             if code in interestingCodes:
