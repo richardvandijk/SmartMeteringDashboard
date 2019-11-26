@@ -16,22 +16,23 @@ from datetime import datetime, timedelta
 import redis
 import configparser
 
-config = configparser.ConfigParser()
-config.read('settings.conf')
+# load settings file
+configFile = configparser.ConfigParser()
+configFile.read('settings.conf')
 
 # Debugging settings
-production = config.getboolean('environment','production')
-debugging = config['environment']['debugging']   # Show extra output
+production = configFile.getboolean('environment','production')
+debugging = configFile['environment']['debugging']   # Show extra output
 
 # redis server settings
-redisHost = config['redisServer']['host']
-redisPort = config['redisServer']['port']
-redisDb = config['redisServer']['db']
+redisHost = configFile['redisServer']['host']
+redisPort = configFile['redisServer']['port']
+redisDb = configF'['redisServer']['db']
 redisConn = redis.Redis(host=redisHost, port=redisPort, db=redisDb)
-redisStream = config['redisServer']['streamName']
+redisStream = configFile['redisServer']['streamName']
 
 # DSMR interesting codes
-gasMeter = config['p1Device']['gasMeter']
+gasMeter = configFile['p1Device']['gasMeter']
 interestingCodes = {
     '0-0:1.0.0': 'timestampTelegramUtc',
     '1-0:1.8.1': 'positiveActiveEnergyTariffT1',
@@ -215,5 +216,5 @@ while True:
     #            print(interestingCodes[code], value)
 
     #    print(telegramRedis)
-        connRedis.xadd(streamName, telegramRedis, id='*')
+        redisConn.xadd(redisStream, telegramRedis, id='*')
 #        print('Values added to Redis')
