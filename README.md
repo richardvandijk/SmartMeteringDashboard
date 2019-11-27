@@ -1,6 +1,6 @@
 # SmartMetering Dashboard
 
-Goal of this project is to create a 
+This SmartMetering Dashboard reads p1 telegrams from SmartMeters (conform DSMR) and stores telegrams in redis streams
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c68f9ceebfc244f080d3243cda81fefb)](https://www.codacy.com/manual/richardvandijk/SmartMeteringDashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=richardvandijk/SmartMeteringDashboard&amp;utm_campaign=Badge_Grade)
 [![Known Vulnerabilities](https://snyk.io/test/github/richardvandijk/SmartMeteringDashboard/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/richardvandijk/SmartMeteringDashboard?targetFile=requirements.txt)
@@ -69,7 +69,7 @@ Please read [CONTRIBUTING.md]() for details on our code of conduct, and the proc
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## Authors
 

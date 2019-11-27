@@ -27,7 +27,7 @@ debugging = configFile['environment']['debugging']   # Show extra output
 # redis server settings
 redisHost = configFile['redisServer']['host']
 redisPort = configFile['redisServer']['port']
-redisDb = configF'['redisServer']['db']
+redisDb = configFile['redisServer']['db']
 redisConn = redis.Redis(host=redisHost, port=redisPort, db=redisDb)
 redisStream = configFile['redisServer']['streamName']
 
