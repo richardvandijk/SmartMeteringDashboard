@@ -83,14 +83,14 @@ goodChecksum = False
 if production:
     #Serial port configuration
     p1 = serial.Serial()
-    p1.baudrate = config['p1Device']['baudrate']
-    p1.bytesize = config['p1Device']['bytesize']
-    p1.parity = config['p1Device']['parity']
-    p1.stopbits = config['p1Device']['stopbits']
-    p1.xonxoff = config['p1Device']['xonxoff']
-    p1.rtscts = config['p1Device']['rtscts']
-    p1.timeout = config['p1Device']['timeout']
-    p1.port = config['p1Device']['port']
+    p1.baudrate = configFile['p1Device']['baudrate']
+    p1.bytesize = configFile['p1Device']['bytesize']
+    p1.parity = configFile['p1Device']['parity']
+    p1.stopbits = configFile['p1Device']['stopbits']
+    p1.xonxoff = configFile['p1Device']['xonxoff']
+    p1.rtscts = configFile['p1Device']['rtscts']
+    p1.timeout = configFile['p1Device']['timeout']
+    p1.port = configFile['p1Device']['port']
 else:
     print("Running in test mode")#import datetime
     # Testing
