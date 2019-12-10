@@ -4,6 +4,7 @@ This SmartMetering Dashboard reads p1 telegrams from SmartMeters (conform DSMR) 
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c68f9ceebfc244f080d3243cda81fefb)](https://www.codacy.com/manual/richardvandijk/SmartMeteringDashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=richardvandijk/SmartMeteringDashboard&amp;utm_campaign=Badge_Grade)
 [![Known Vulnerabilities](https://snyk.io/test/github/richardvandijk/SmartMeteringDashboard/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/richardvandijk/SmartMeteringDashboard?targetFile=requirements.txt)
+[![Maintainability](https://api.codeclimate.com/v1/badges/fbd9b8c467476dfc22fe/maintainability)](https://codeclimate.com/github/richardvandijk/SmartMeteringDashboard/maintainability)
 
 
 ## Getting Started
