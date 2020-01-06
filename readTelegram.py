@@ -84,17 +84,17 @@ if production:
     #Serial port configuration
     p1 = serial.Serial()
     p1.baudrate = configFile['p1Device']['baudrate']
-    p1.bytesize = configFile['p1Device']['bytesize']
-    p1.parity = configFile['p1Device']['parity']
-    p1.stopbits = configFile['p1Device']['stopbits']
+    p1.bytesize = serial.EIGHTBITS
+    p1.parity = serial.PARITY_NONE
+    p1.stopbits = serial.STOPBITS_ONE
     p1.xonxoff = configFile['p1Device']['xonxoff']
     p1.rtscts = configFile['p1Device']['rtscts']
-    p1.timeout = configFile['p1Device']['timeout']
+    p1.timeout = 12
     p1.port = configFile['p1Device']['port']
 else:
     print("Running in test mode")#import datetime
     # Testing
-    p1 = open("Design/telegram.list", 'rb')
+    p1 = open(configFile['environment']['testFile'], 'rb')
 
 while True:
     try:
@@ -202,19 +202,10 @@ while True:
                 else:
                         value = float(value.lstrip(b'\(').rstrip(b'\)*kWhAV'))
                         telegramRedis[str(code)] = value
-                # Print nicely formatted string
-#                if printFormat == 'string' :
-#                    printString = '{0:<'+str(maxLen)+'}{1:>12}'
-#                    if debugging > 0:
-#                            print((datetime.datetime.utcnow()), end=' '),
-#                    print(printString.format(interestingCodes[code], value))
-#                else:
-#                    printString = '{0:<10}{1:>12}'
-#                    if debugging > 0:
-#                            print((datetime.datetime.utcnow()), end=' '),
-#                    print(printString.format(code, value))
-    #            print(interestingCodes[code], value)
 
-    #    print(telegramRedis)
-        redisConn.xadd(redisStream, telegramRedis, id='*')
+        if production:
+            redisConn.xadd(redisStream, telegramRedis, id='*')
+        else:
+            print(telegramRedis)
+            break
 #        print('Values added to Redis')
