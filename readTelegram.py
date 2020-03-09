@@ -204,7 +204,7 @@ while True:
                         telegramRedis[str(code)] = value
 
         if production:
-            redisConn.xadd(redisStream, telegramRedis, id='*')
+            redisConn.xadd(redisStream, MAXLEN ~ 3600, telegramRedis, id='*')
         else:
             print(telegramRedis)
             break
